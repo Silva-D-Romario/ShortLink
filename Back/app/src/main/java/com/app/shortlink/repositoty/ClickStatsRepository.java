@@ -1,14 +1,15 @@
-package com.app.ShortLink.repositoty;
+package com.app.shortlink.repositoty;
 
 
 
-import com.app.ShortLink.model.ClickStats;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+
+import com.app.shortlink.model.ClickStats;
 
 public interface ClickStatsRepository extends JpaRepository<ClickStats, Long> {
 

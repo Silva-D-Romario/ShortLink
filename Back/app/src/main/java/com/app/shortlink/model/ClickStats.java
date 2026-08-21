@@ -1,4 +1,4 @@
-package com.app.ShortLink.model;
+package com.app.shortlink.model;
 
 import java.time.LocalDateTime;
 

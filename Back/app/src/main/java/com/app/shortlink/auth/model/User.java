@@ -1,4 +1,4 @@
-package com.app.ShortLink.auth.model;
+package com.app.shortlink.auth.model;
 
 
 import jakarta.persistence.*;

@@ -1,4 +1,4 @@
-package com.app.ShortLink.repositoty;
+package com.app.shortlink.repositoty;
 
 
 
@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.app.ShortLink.model.ShortLink;
+import com.app.shortlink.model.ShortLink;
 
 public interface ShortLinkRepository extends JpaRepository<ShortLink, Long> {
 
