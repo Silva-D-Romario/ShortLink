@@ -1,17 +1,17 @@
 package com.app.shortlink.service;
 
 
-import com.app.shortlink.dto.ClickStatsResponse;
-import com.app.shortlink.model.ClickStats;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
 import com.app.shortlink.model.ShortLink;
-import com.app.shortlink.repository.ClickStatsRepository;
-import com.app.shortlink.repository.ShortLinkRepository;
+import com.app.shortlink.repositoty.ClickStatsRepository;
+import com.app.shortlink.repositoty.ShortLinkRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
