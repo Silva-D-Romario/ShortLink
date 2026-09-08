@@ -1,18 +1,28 @@
 package com.app.shortlink.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Entity
-@Table(name = "short_links", 
-       indexes = {
-           @Index(name = "idx_short_code_domain", columnList = "shortCode, domain"),
-           @Index(name = "idx_user_id", columnList = "userId"),
-           @Index(name = "idx_url_hash", columnList = "urlHash")
-       })
+@Table(name = "short_links", indexes = {
+        @Index(name = "idx_short_code_domain", columnList = "shortCode, domain"),
+        @Index(name = "idx_user_id", columnList = "userId"),
+        @Index(name = "idx_url_hash", columnList = "urlHash")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,12 +49,14 @@ public class ShortLink {
     private Long userId; // Referência ao usuário que criou
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer clickCount = 0;
 
     @Column
     private LocalDateTime expiresAt; // null = nunca expira
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
 
     @Column(columnDefinition = "TEXT")

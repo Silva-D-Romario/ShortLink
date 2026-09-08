@@ -1,29 +1,29 @@
 package com.app.shortlink.service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-
-import com.app.shortlink.dto.ShortLinkRequest;
-import com.app.shortlink.dto.ShortLinkResponse;
-import com.app.shortlink.dto.ClickStatsResponse;
-import com.app.shortlink.exception.ShortLinkNotFoundException;
-import com.app.shortlink.exception.InvalidUrlException;
-import com.app.shortlink.model.ShortLink;
-import com.app.shortlink.model.ClickStats;
-import com.app.shortlink.repositoty.ClickStatsRepository;
-import com.app.shortlink.repositoty.ShortLinkRepository;
-import com.app.shortlink.util.Base62Encoder;
-import com.app.shortlink.util.UrlValidator;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.util.UUID;
+
+import com.app.shortlink.dto.ClickStatsResponse;
+import com.app.shortlink.dto.ShortLinkRequest;
+import com.app.shortlink.dto.ShortLinkResponse;
+import com.app.shortlink.exception.InvalidUrlException;
+import com.app.shortlink.exception.ShortLinkNotFoundException;
+import com.app.shortlink.model.ClickStats;
+import com.app.shortlink.model.ShortLink;
+import com.app.shortlink.repositoty.ClickStatsRepository;
+import com.app.shortlink.repositoty.ShortLinkRepository;
+import com.app.shortlink.util.Base62Encoder;
+import com.app.shortlink.util.UrlValidator;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +34,9 @@ public class ShortLinkServiceImpl implements ShortLinkService {
     private final ClickStatsRepository clickStatsRepository;
     private final Base62Encoder base62Encoder;
     private final UrlValidator urlValidator;
+
+    @Value("${shortlink.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     @Override
     @Transactional
@@ -50,41 +53,41 @@ public class ShortLinkServiceImpl implements ShortLinkService {
         // 2. Verifica se já existe link ativo para essa URL (opcional)
         // Se quiser permitir duplicatas, comente esta parte
         return shortLinkRepository.findByUrlHashAndUserIdAndIsActiveTrue(urlHash, userId)
-            .map(existingLink -> {
-                log.info("Link already exists for user {}: {}", userId, existingLink.getShortCode());
-                return mapToResponse(existingLink);
-            })
-            .orElseGet(() -> {
-                // 3. Gera novo link
-                String shortCode = generateUniqueShortCode();
-                
-                ShortLink newLink = ShortLink.builder()
-                    .originalUrl(normalizedUrl)
-                    .shortCode(shortCode)
-                    .domain(domain)
-                    .urlHash(urlHash)
-                    .userId(userId)
-                    .expiresAt(request.getExpiresInDays() != null ? 
-                               LocalDateTime.now().plusDays(request.getExpiresInDays()) : null)
-                    .isActive(true)
-                    .clickCount(0)
-                    .notes(request.getNotes())
-                    .build();
+                .map(existingLink -> {
+                    log.info("Link already exists for user {}: {}", userId, existingLink.getShortCode());
+                    return mapToResponse(existingLink);
+                })
+                .orElseGet(() -> {
+                    // 3. Gera novo link
+                    String shortCode = generateUniqueShortCode();
 
-                ShortLink saved = shortLinkRepository.save(newLink);
-                log.info("Short link created: {} -> {} for user {}", shortCode, normalizedUrl, userId);
-                
-                return mapToResponse(saved);
-            });
+                    ShortLink newLink = ShortLink.builder()
+                            .originalUrl(normalizedUrl)
+                            .shortCode(shortCode)
+                            .domain(domain)
+                            .urlHash(urlHash)
+                            .userId(userId)
+                            .expiresAt(request.getExpiresInDays() != null
+                                    ? LocalDateTime.now().plusDays(request.getExpiresInDays())
+                                    : null)
+                            .isActive(true)
+                            .clickCount(0)
+                            .notes(request.getNotes())
+                            .build();
+
+                    ShortLink saved = shortLinkRepository.save(newLink);
+                    log.info("Short link created: {} -> {} for user {}", shortCode, normalizedUrl, userId);
+
+                    return mapToResponse(saved);
+                });
     }
 
     @Override
-    @Cacheable(value = "shortLinkCache", key = "#domain + ':' + #shortCode")
     public String getOriginalUrl(String shortCode, String domain, String clientIp, String userAgent) {
         // 1. Busca o link ativo
         ShortLink shortLink = shortLinkRepository
-            .findByShortCodeAndDomainAndIsActiveTrue(shortCode, domain)
-            .orElseThrow(() -> new ShortLinkNotFoundException("Link not found or expired"));
+                .findByShortCodeAndDomainAndIsActiveTrue(shortCode, domain)
+                .orElseThrow(() -> new ShortLinkNotFoundException("Link not found or expired"));
 
         // 2. Verifica expiração
         if (shortLink.getExpiresAt() != null && shortLink.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -104,21 +107,21 @@ public class ShortLinkServiceImpl implements ShortLinkService {
     }
 
     @Async
-    public void saveClickStatsAsync(Long shortLinkId, String shortCode, String domain, 
-                                   String ipAddress, String userAgent) {
+    public void saveClickStatsAsync(Long shortLinkId, String shortCode, String domain,
+            String ipAddress, String userAgent) {
         try {
             ClickStats stats = ClickStats.builder()
-                .shortLinkId(shortLinkId)
-                .shortCode(shortCode)
-                .domain(domain)
-                .ipAddress(ipAddress)
-                .userAgent(userAgent)
-                .clickDate(LocalDateTime.now())
-                .build();
-            
+                    .shortLinkId(shortLinkId)
+                    .shortCode(shortCode)
+                    .domain(domain)
+                    .ipAddress(ipAddress)
+                    .userAgent(userAgent)
+                    .clickDate(LocalDateTime.now())
+                    .build();
+
             // Opcional: enriquecer com geolocalização via API externa
             // enrichWithGeoLocation(stats, ipAddress);
-            
+
             clickStatsRepository.save(stats);
         } catch (Exception e) {
             log.error("Error saving click stats: {}", e.getMessage());
@@ -128,15 +131,14 @@ public class ShortLinkServiceImpl implements ShortLinkService {
     @Override
     public Page<ShortLinkResponse> getUserLinks(Long userId, Pageable pageable) {
         return shortLinkRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable)
-            .map(this::mapToResponse);
+                .map(this::mapToResponse);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "shortLinkCache", key = "#domain + ':' + #shortCode")
     public ShortLinkResponse updateShortLink(Long linkId, ShortLinkRequest request, Long userId) {
         ShortLink shortLink = shortLinkRepository.findById(linkId)
-            .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
+                .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
 
         if (!shortLink.getUserId().equals(userId)) {
             throw new SecurityException("You don't have permission to update this link");
@@ -160,16 +162,15 @@ public class ShortLinkServiceImpl implements ShortLinkService {
 
         ShortLink updated = shortLinkRepository.save(shortLink);
         log.info("Short link updated: {}", updated.getShortCode());
-        
+
         return mapToResponse(updated);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "shortLinkCache", key = "#domain + ':' + #shortCode")
     public void deleteShortLink(Long linkId, Long userId) {
         ShortLink shortLink = shortLinkRepository.findById(linkId)
-            .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
+                .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
 
         if (!shortLink.getUserId().equals(userId)) {
             throw new SecurityException("You don't have permission to delete this link");
@@ -184,17 +185,17 @@ public class ShortLinkServiceImpl implements ShortLinkService {
     @Override
     public ClickStatsResponse getLinkStats(String shortCode, String domain) {
         ShortLink shortLink = shortLinkRepository
-            .findByShortCodeAndDomainAndIsActiveTrue(shortCode, domain)
-            .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
+                .findByShortCodeAndDomainAndIsActiveTrue(shortCode, domain)
+                .orElseThrow(() -> new ShortLinkNotFoundException("Link not found"));
 
         return ClickStatsResponse.builder()
-            .shortCode(shortLink.getShortCode())
-            .originalUrl(shortLink.getOriginalUrl())
-            .totalClicks(shortLink.getClickCount())
-            .createdAt(shortLink.getCreatedAt())
-            .expiresAt(shortLink.getExpiresAt())
-            .isActive(shortLink.getIsActive())
-            .build();
+                .shortCode(shortLink.getShortCode())
+                .originalUrl(shortLink.getOriginalUrl())
+                .totalClicks(shortLink.getClickCount())
+                .createdAt(shortLink.getCreatedAt())
+                .expiresAt(shortLink.getExpiresAt())
+                .isActive(shortLink.getIsActive())
+                .build();
     }
 
     @Override
@@ -217,7 +218,7 @@ public class ShortLinkServiceImpl implements ShortLinkService {
             while (code.length() < 6) {
                 code = "0" + code;
             }
-            
+
             // Verifica se já existe
             if (shortLinkRepository.findByShortCode(code).isEmpty()) {
                 return code;
@@ -232,21 +233,19 @@ public class ShortLinkServiceImpl implements ShortLinkService {
     }
 
     private ShortLinkResponse mapToResponse(ShortLink link) {
-        String shortUrl = String.format("http://%s.seudominio.com/%s", 
-            link.getDomain(), 
-            link.getShortCode()
-        );
-        
+        String shortUrl = String.format("%s/api/shortlinks/%s?domain=%s",
+                baseUrl.replaceAll("/$", ""), link.getShortCode(), link.getDomain());
+
         return ShortLinkResponse.builder()
-            .id(link.getId())
-            .shortCode(link.getShortCode())
-            .shortUrl(shortUrl)
-            .originalUrl(link.getOriginalUrl())
-            .clickCount(link.getClickCount())
-            .createdAt(link.getCreatedAt())
-            .expiresAt(link.getExpiresAt())
-            .isActive(link.getIsActive())
-            .notes(link.getNotes())
-            .build();
+                .id(link.getId())
+                .shortCode(link.getShortCode())
+                .shortUrl(shortUrl)
+                .originalUrl(link.getOriginalUrl())
+                .clickCount(link.getClickCount())
+                .createdAt(link.getCreatedAt())
+                .expiresAt(link.getExpiresAt())
+                .isActive(link.getIsActive())
+                .notes(link.getNotes())
+                .build();
     }
 }
