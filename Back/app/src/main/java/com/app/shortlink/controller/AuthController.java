@@ -1,10 +1,8 @@
 package com.app.shortlink.controller;
 
-
-
-import com.shortlink.auth.dto.AuthRequest;
-import com.shortlink.auth.dto.AuthResponse;
-import com.shortlink.auth.service.AuthService;
+import com.app.shortlink.auth.dto.AuthRequest;
+import com.app.shortlink.auth.dto.AuthResponse;
+import com.app.shortlink.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,12 +1,10 @@
 package com.app.shortlink.controller;
 
-
-
-import com.shortlink.dto.ShortLinkRequest;
-import com.shortlink.dto.ShortLinkResponse;
-import com.shortlink.dto.ClickStatsResponse;
-import com.shortlink.service.ShortLinkService;
-import com.shortlink.service.ClickStatsService;
+import com.app.shortlink.dto.ShortLinkRequest;
+import com.app.shortlink.dto.ShortLinkResponse;
+import com.app.shortlink.dto.ClickStatsResponse;
+import com.app.shortlink.service.ShortLinkService;
+import com.app.shortlink.service.ClickStatsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,7 @@ public class ShortLinkController {
     public ResponseEntity<ShortLinkResponse> createShortLink(
             @Valid @RequestBody ShortLinkRequest request,
             Authentication authentication) {
-        
+
         Long userId = getUserId(authentication);
         ShortLinkResponse response = shortLinkService.createShortLink(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -46,14 +44,14 @@ public class ShortLinkController {
             @PathVariable String shortCode,
             @RequestParam(defaultValue = "sl") String domain,
             HttpServletRequest request) {
-        
+
         String clientIp = getClientIp(request);
         String userAgent = request.getHeader("User-Agent");
-        
+
         String originalUrl = shortLinkService.getOriginalUrl(shortCode, domain, clientIp, userAgent);
         return ResponseEntity.status(HttpStatus.FOUND)
-            .location(URI.create(originalUrl))
-            .build();
+                .location(URI.create(originalUrl))
+                .build();
     }
 
     // 3. Listar links do usuário
@@ -61,7 +59,7 @@ public class ShortLinkController {
     public ResponseEntity<Page<ShortLinkResponse>> getUserLinks(
             Authentication authentication,
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
-        
+
         Long userId = getUserId(authentication);
         return ResponseEntity.ok(shortLinkService.getUserLinks(userId, pageable));
     }
@@ -72,7 +70,7 @@ public class ShortLinkController {
             @PathVariable Long linkId,
             @Valid @RequestBody ShortLinkRequest request,
             Authentication authentication) {
-        
+
         Long userId = getUserId(authentication);
         return ResponseEntity.ok(shortLinkService.updateShortLink(linkId, request, userId));
     }
@@ -82,7 +80,7 @@ public class ShortLinkController {
     public ResponseEntity<Void> deleteLink(
             @PathVariable Long linkId,
             Authentication authentication) {
-        
+
         Long userId = getUserId(authentication);
         shortLinkService.deleteShortLink(linkId, userId);
         return ResponseEntity.noContent().build();
@@ -93,7 +91,7 @@ public class ShortLinkController {
     public ResponseEntity<ClickStatsResponse> getLinkStats(
             @PathVariable String shortCode,
             @RequestParam(defaultValue = "sl") String domain) {
-        
+
         return ResponseEntity.ok(shortLinkService.getLinkStats(shortCode, domain));
     }
 
@@ -102,14 +100,13 @@ public class ShortLinkController {
     public ResponseEntity<Map<String, Object>> getDetailedStats(
             @PathVariable String shortCode,
             @RequestParam(defaultValue = "sl") String domain) {
-        
+
         return ResponseEntity.ok(clickStatsService.getDetailedStats(shortCode, domain));
     }
 
     // Métodos auxiliares
     private Long getUserId(Authentication authentication) {
-        // Obtém userId do JWT
-        return Long.parseLong(authentication.getName());
+        return authentication == null ? 1L : Long.parseLong(authentication.getName());
     }
 
     private String getClientIp(HttpServletRequest request) {
