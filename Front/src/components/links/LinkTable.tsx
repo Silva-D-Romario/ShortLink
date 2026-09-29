@@ -5,6 +5,13 @@ interface LinkTableProps {
 }
 
 export function LinkTable({ links }: LinkTableProps) {
+  function formatDate(value: string) {
+    return new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(new Date(value))
+  }
+
   return (
     <section className="links-section" id="links">
       <div className="section-heading">
@@ -15,10 +22,10 @@ export function LinkTable({ links }: LinkTableProps) {
         <table>
           <thead><tr><th>Link curto</th><th>URL original</th><th>Cliques</th><th>Criado em</th></tr></thead>
           <tbody>{links.map((link) => <tr key={link.id}>
-            <td><a className="short-code" href={`http://localhost:8080/${link.shortCode}`}>sl.link/{link.shortCode}</a></td>
+            <td><a className="short-code" href={link.shortUrl} target="_blank" rel="noreferrer">sl.link/{link.shortCode}</a></td>
             <td className="original-url">{link.originalUrl}</td>
-            <td>{link.clicks.toLocaleString('pt-BR')}</td>
-            <td>{link.createdAt}</td>
+            <td>{link.clickCount.toLocaleString('pt-BR')}</td>
+            <td>{formatDate(link.createdAt)}</td>
           </tr>)}</tbody>
         </table>
       </div>

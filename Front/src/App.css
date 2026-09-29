@@ -227,6 +227,17 @@ nav {
     font-size: 18px;
 }
 
+.input-row button:disabled {
+    cursor: wait;
+    opacity: .75;
+}
+
+.form-error {
+    margin: 12px 4px 0;
+    color: #9f2f2f;
+    font-size: 13px;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
