@@ -30,6 +30,16 @@ export async function authenticate(
   return parseResponse<AuthResponse>(response)
 }
 
+export async function updateProfile(email: string, fullName: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_URL}/auth/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ email, fullName }),
+  })
+
+  return parseResponse<AuthResponse>(response)
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const message = await response.text()

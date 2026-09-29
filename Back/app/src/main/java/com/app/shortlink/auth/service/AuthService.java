@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.app.shortlink.auth.dto.AuthRequest;
 import com.app.shortlink.auth.dto.AuthResponse;
+import com.app.shortlink.auth.dto.ProfileRequest;
 import com.app.shortlink.auth.model.User;
 import com.app.shortlink.auth.repository.UserRepository;
 
@@ -59,15 +60,42 @@ public class AuthService {
         return Optional.ofNullable(sessions.get(token));
     }
 
+    public AuthResponse getProfile(Long userId) {
+        return profileResponse(findUser(userId));
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(Long userId, ProfileRequest request) {
+        User user = findUser(userId);
+        String email = normalizeEmail(request.getEmail());
+        userRepository.findByEmail(email)
+                .filter(existing -> !existing.getId().equals(userId))
+                .ifPresent(existing -> { throw new IllegalArgumentException("Email already registered"); });
+        user.setEmail(email);
+        user.setFullName(request.getFullName().trim());
+        userRepository.save(user);
+        return response(user);
+    }
+
     private AuthResponse response(User user) {
         String token = UUID.randomUUID().toString();
         sessions.put(token, user.getId());
+        return profileResponse(user).toBuilder()
+                .token(token)
+                .build();
+    }
+
+    private AuthResponse profileResponse(User user) {
         return AuthResponse.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
-                .token(token)
                 .build();
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     private String normalizeEmail(String email) {

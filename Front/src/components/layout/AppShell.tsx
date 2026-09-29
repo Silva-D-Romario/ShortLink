@@ -2,20 +2,13 @@ import type { ReactNode } from 'react'
 
 interface AppShellProps {
   children: ReactNode
-  activeSection: string
   userEmail?: string
-  onNavigate: (sectionId: string) => void
   onOpenAuth: () => void
+  onEditProfile: () => void
   onLogout: () => void
 }
 
-export function AppShell({ children, activeSection, userEmail, onNavigate, onOpenAuth, onLogout }: AppShellProps) {
-  const menuItems = [
-    { id: 'dashboard', label: 'Visão geral' },
-    { id: 'links', label: 'Meus links' },
-    { id: 'analytics', label: 'Analytics' },
-  ]
-
+export function AppShell({ children, userEmail, onOpenAuth, onEditProfile, onLogout }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -23,25 +16,18 @@ export function AppShell({ children, activeSection, userEmail, onNavigate, onOpe
           <span className="brand-mark">SL</span>
           <span>ShortLink</span>
         </a>
-        <nav aria-label="Navegação principal">
-          {menuItems.map((item) => (
-            <button
-              className={`nav-link ${activeSection === item.id ? 'nav-link-active' : ''}`}
-              key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
+        <nav aria-label="Conta">
+          {!userEmail && <button className="nav-link nav-link-active" type="button" onClick={onOpenAuth}>Entrar ou cadastrar</button>}
+          {userEmail && <>
+            <button className="nav-link" type="button" onClick={onEditProfile}>Editar perfil</button>
+            <button className="nav-link" type="button" onClick={onLogout}>Sair</button>
+          </>}
         </nav>
         <div className="sidebar-footer">
           <span className="avatar">SL</span>
           <span className="account-details">
             <strong>{userEmail ?? 'Visitante'}</strong>
-            <button type="button" onClick={userEmail ? onLogout : onOpenAuth}>
-              {userEmail ? 'Sair' : 'Entrar ou cadastrar'}
-            </button>
+            <small>{userEmail ? 'Conta conectada' : 'Entre para criar links'}</small>
           </span>
         </div>
       </aside>
