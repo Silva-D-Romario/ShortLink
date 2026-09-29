@@ -1,6 +1,21 @@
-import type { Page, ShortLink, ShortLinkRequest } from '../types/link'
+import type { AuthResponse, Page, ShortLink, ShortLinkRequest } from '../types/link'
 
 const API_URL = import.meta.env.VITE_API_URL ?? '/api'
+
+export async function authenticate(
+  mode: 'login' | 'register',
+  email: string,
+  password: string,
+  fullName?: string,
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_URL}/auth/${mode}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, fullName }),
+  })
+
+  return parseResponse<AuthResponse>(response)
+}
 
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {

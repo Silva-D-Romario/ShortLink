@@ -48,10 +48,15 @@ nav {
 }
 
 .nav-link {
+    width: 100%;
     padding: 12px 14px;
+    border: 0;
     border-radius: 7px;
+    background: transparent;
     color: #aebfb3;
+    cursor: pointer;
     font-size: 14px;
+    text-align: left;
     text-decoration: none;
 }
 
@@ -74,6 +79,120 @@ nav {
 .sidebar-footer strong,
 .sidebar-footer small {
     display: block;
+}
+
+.account-details {
+    min-width: 0;
+}
+
+.account-details strong {
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-details button {
+    margin-top: 3px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #a9c8b1;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.dialog-backdrop {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(13, 35, 30, .6);
+}
+
+.auth-dialog {
+    position: relative;
+    width: min(100%, 420px);
+    padding: 34px;
+    border-radius: 10px;
+    background: #f8faf5;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+}
+
+.auth-dialog h2 {
+    margin: 0 0 24px;
+    color: #17352e;
+    font: 400 29px Georgia, serif;
+}
+
+.dialog-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    border: 0;
+    background: transparent;
+    color: #65736b;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #d6e1d5;
+}
+
+.auth-tabs button {
+    padding: 10px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #718078;
+    cursor: pointer;
+}
+
+.auth-tabs button.active {
+    border-color: #17352e;
+    color: #17352e;
+    font-weight: 700;
+}
+
+.auth-dialog form,
+.auth-dialog label {
+    display: grid;
+    gap: 8px;
+}
+
+.auth-dialog form {
+    gap: 16px;
+}
+
+.auth-dialog label {
+    color: #43574d;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.auth-dialog input {
+    padding: 12px 13px;
+    border: 1px solid #cbd8cc;
+    border-radius: 5px;
+    background: #fff;
+    color: #17352e;
+    font: inherit;
+}
+
+.auth-submit {
+    min-height: 44px;
+    border: 0;
+    border-radius: 5px;
+    background: #17352e;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
 }
 
 .sidebar-footer small {

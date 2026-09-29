@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
 import { AppShell } from '../components/layout/AppShell'
+import { AuthDialog } from '../components/auth/AuthDialog'
 import { LinkTable } from '../components/links/LinkTable'
 import { ShortenForm } from '../components/links/ShortenForm'
 import { createShortLink, getApiHealth, getShortLinks } from '../services/api'
-import type { ShortLink } from '../types/link'
+import type { AuthResponse, ShortLink } from '../types/link'
 
 export function DashboardPage() {
   const [links, setLinks] = useState<ShortLink[]>([])
   const [error, setError] = useState('')
   const [isApiOnline, setIsApiOnline] = useState<boolean | null>(null)
+  const [activeSection, setActiveSection] = useState('dashboard')
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const [session, setSession] = useState<AuthResponse | null>(() => {
+    const storedSession = localStorage.getItem('shortlink-session')
+    return storedSession ? JSON.parse(storedSession) as AuthResponse : null
+  })
 
   useEffect(() => {
     getApiHealth()
@@ -44,7 +51,23 @@ export function DashboardPage() {
   }).length
   const activeLinks = links.filter((link) => link.isActive).length
 
-  return <AppShell>
+  function navigateTo(sectionId: string) {
+    setActiveSection(sectionId)
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function saveSession(authSession: AuthResponse) {
+    localStorage.setItem('shortlink-session', JSON.stringify(authSession))
+    setSession(authSession)
+    setIsAuthOpen(false)
+  }
+
+  function logout() {
+    localStorage.removeItem('shortlink-session')
+    setSession(null)
+  }
+
+  return <AppShell activeSection={activeSection} userEmail={session?.email} onNavigate={navigateTo} onOpenAuth={() => setIsAuthOpen(true)} onLogout={logout}>
     <header className="topbar"><span className="mobile-brand">ShortLink</span><button className="help-button" type="button">Ajuda <span aria-hidden="true">?</span></button></header>
     <div className="page-intro" id="dashboard"><div><p className="eyebrow">{currentDate}</p><h1>Olá<span>.</span></h1><p className="intro-copy">Tudo o que você precisa para compartilhar melhor.</p></div><div className={`status-pill ${isApiOnline === false ? 'status-pill-offline' : ''}`}><span /> {isApiOnline === null ? 'Verificando sistema' : isApiOnline ? 'Sistema operacional' : 'Sistema indisponível'}</div></div>
     <ShortenForm onSubmit={addLink} />
@@ -55,5 +78,6 @@ export function DashboardPage() {
       <article><span className="stat-label">Links ativos</span><strong>{activeLinks}</strong><span className="stat-note">Disponíveis para acesso</span></article>
     </section>
     <LinkTable links={links} />
+    {isAuthOpen && <AuthDialog onClose={() => setIsAuthOpen(false)} onAuthenticated={saveSession} />}
   </AppShell>
 }
