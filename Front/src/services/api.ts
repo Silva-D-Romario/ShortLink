@@ -61,7 +61,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 export async function createShortLink(payload: ShortLinkRequest): Promise<ShortLink> {
   const response = await fetch(`${API_URL}/shortlinks/shorten`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload),
   })
 
