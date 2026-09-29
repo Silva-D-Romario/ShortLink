@@ -195,6 +195,36 @@ nav {
     font-weight: 700;
 }
 
+.help-dialog ol {
+    display: grid;
+    gap: 18px;
+    margin: 0 0 22px;
+    padding-left: 22px;
+    color: #17352e;
+}
+
+.help-dialog li {
+    padding-left: 5px;
+}
+
+.help-dialog li span {
+    display: block;
+    margin-top: 4px;
+    color: #65736b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.help-note {
+    margin: 0 0 22px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background: #e9f3d6;
+    color: #52655a;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 .sidebar-footer small {
     margin-top: 2px;
     color: #93aa9b;
