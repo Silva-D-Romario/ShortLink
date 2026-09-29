@@ -8,5 +8,6 @@ import com.app.shortlink.auth.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByAuthToken(String authToken);
     boolean existsByEmail(String email);
 }
