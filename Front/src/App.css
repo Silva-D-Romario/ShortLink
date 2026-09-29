@@ -180,6 +180,14 @@ nav {
     background: #79bb65;
 }
 
+.status-pill-offline {
+    color: #9f2f2f;
+}
+
+.status-pill-offline span {
+    background: #c55252;
+}
+
 .shorten-form {
     padding: 27px 30px 30px;
     border-radius: 8px;

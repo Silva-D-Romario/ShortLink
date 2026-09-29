@@ -26,3 +26,8 @@ export async function getShortLinks(): Promise<ShortLink[]> {
   const page = await parseResponse<Page<ShortLink>>(response)
   return page.content
 }
+
+export async function getApiHealth(): Promise<boolean> {
+  const response = await fetch('/health')
+  return response.ok
+}
