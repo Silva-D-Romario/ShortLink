@@ -21,3 +21,9 @@ export interface Page<T> {
   content: T[]
   totalElements: number
 }
+
+export interface AuthResponse {
+  userId: number
+  email: string
+  token: string
+}
