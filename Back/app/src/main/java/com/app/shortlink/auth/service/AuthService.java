@@ -1,42 +1,76 @@
 package com.app.shortlink.auth.service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.app.shortlink.auth.dto.AuthRequest;
 import com.app.shortlink.auth.dto.AuthResponse;
+import com.app.shortlink.auth.model.User;
+import com.app.shortlink.auth.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    private final AtomicLong nextUserId = new AtomicLong(1);
-    private final Map<String, RegisteredUser> users = new ConcurrentHashMap<>();
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Map<String, Long> sessions = new ConcurrentHashMap<>();
 
+    @Transactional
     public AuthResponse register(AuthRequest request) {
-        long userId = nextUserId.getAndIncrement();
-        users.putIfAbsent(request.getEmail(), new RegisteredUser(userId, request.getPassword()));
-        return response(request.getEmail(), users.get(request.getEmail()).userId());
+        String email = normalizeEmail(request.getEmail());
+        if (request.getFullName() == null || request.getFullName().isBlank()) {
+            throw new IllegalArgumentException("Full name is required");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
+        User user = User.builder()
+                .email(email)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName().trim())
+                .isActive(true)
+                .build();
+        return response(userRepository.save(user));
     }
 
+    @Transactional
     public AuthResponse login(AuthRequest request) {
-        RegisteredUser user = users.get(request.getEmail());
-        if (user == null || !user.password().equals(request.getPassword())) {
+        User user = userRepository.findByEmail(normalizeEmail(request.getEmail())).orElse(null);
+        if (user == null || !user.getIsActive() || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
-        return response(request.getEmail(), user.userId());
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
+        return response(user);
     }
 
-    private AuthResponse response(String email, long userId) {
+    public Optional<Long> resolveUserId(String token) {
+        return Optional.ofNullable(sessions.get(token));
+    }
+
+    private AuthResponse response(User user) {
+        String token = UUID.randomUUID().toString();
+        sessions.put(token, user.getId());
         return AuthResponse.builder()
-            .userId(userId)
-            .email(email)
-            .token("dev-user-" + userId)
-            .build();
+                .userId(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .token(token)
+                .build();
     }
 
-    private record RegisteredUser(long userId, String password) {
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
     }
 }

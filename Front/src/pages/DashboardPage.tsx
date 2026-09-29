@@ -14,7 +14,13 @@ export function DashboardPage() {
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [session, setSession] = useState<AuthResponse | null>(() => {
     const storedSession = localStorage.getItem('shortlink-session')
-    return storedSession ? JSON.parse(storedSession) as AuthResponse : null
+    if (!storedSession) return null
+    try {
+      return JSON.parse(storedSession) as AuthResponse
+    } catch {
+      localStorage.removeItem('shortlink-session')
+      return null
+    }
   })
 
   useEffect(() => {
@@ -22,13 +28,20 @@ export function DashboardPage() {
       .then(setIsApiOnline)
       .catch(() => setIsApiOnline(false))
 
-    getShortLinks()
-      .then(setLinks)
-      .catch(() => setError('Não foi possível carregar os links. Verifique se a API está em execução.'))
-  }, [])
+    if (session) {
+      getShortLinks()
+        .then(setLinks)
+        .catch(() => setError('Sua sessão expirou. Entre novamente para acessar seus links.'))
+    }
+  }, [session])
 
   async function addLink(url: string) {
     setError('')
+    if (!session) {
+      setIsAuthOpen(true)
+      setError('Entre na sua conta para criar um link.')
+      return false
+    }
     try {
       const link = await createShortLink({ originalUrl: url })
       setLinks((current) => [link, ...current])
@@ -65,6 +78,7 @@ export function DashboardPage() {
   function logout() {
     localStorage.removeItem('shortlink-session')
     setSession(null)
+    setLinks([])
   }
 
   return <AppShell activeSection={activeSection} userEmail={session?.email} onNavigate={navigateTo} onOpenAuth={() => setIsAuthOpen(true)} onLogout={logout}>
