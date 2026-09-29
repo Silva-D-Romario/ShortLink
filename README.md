@@ -86,6 +86,14 @@ npm run lint
 npm run build
 ```
 
+## Fluxo de desenvolvimento
+
+- `main`: versão estável de produção.
+- `develop`: desenvolvimento, correções e testes antes da publicação.
+
+Cada mudança deve ser registrada em um commit próprio. Após os testes passarem em
+`develop`, as alterações podem ser integradas à `main`.
+
 ## Estrutura
 
 ```text

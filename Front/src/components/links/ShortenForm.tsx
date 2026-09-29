@@ -2,15 +2,24 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 
 interface ShortenFormProps {
-  onSubmit: (url: string) => void
+  onSubmit: (url: string) => Promise<boolean>
 }
 
 export function ShortenForm({ onSubmit }: ShortenFormProps) {
   const [url, setUrl] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (url.trim()) onSubmit(url.trim())
+    if (!url.trim()) return
+
+    setIsSubmitting(true)
+    try {
+      const created = await onSubmit(url.trim())
+      if (created) setUrl('')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -25,7 +34,9 @@ export function ShortenForm({ onSubmit }: ShortenFormProps) {
           onChange={(event) => setUrl(event.target.value)}
           required
         />
-        <button type="submit">Encurtar link <span aria-hidden="true">→</span></button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Encurtando...' : 'Encurtar link'} <span aria-hidden="true">→</span>
+        </button>
       </div>
     </form>
   )
