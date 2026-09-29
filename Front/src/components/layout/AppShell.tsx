@@ -18,8 +18,8 @@ export function AppShell({ children }: AppShellProps) {
           <a className="nav-link" href="#analytics">Analytics</a>
         </nav>
         <div className="sidebar-footer">
-          <span className="avatar">RM</span>
-          <span><strong>Romário</strong><small>Plano gratuito</small></span>
+          <span className="avatar">SL</span>
+          <span><strong>Modo local</strong><small>Sem autenticação</small></span>
         </div>
       </aside>
       <main className="main-content">{children}</main>
