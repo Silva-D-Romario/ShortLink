@@ -5,7 +5,7 @@ import { ProfileDialog } from '../components/auth/ProfileDialog'
 import { HelpDialog } from '../components/help/HelpDialog'
 import { LinkTable } from '../components/links/LinkTable'
 import { ShortenForm } from '../components/links/ShortenForm'
-import { createShortLink, getApiHealth, getShortLinks } from '../services/api'
+import { ApiError, createShortLink, getApiHealth, getShortLinks } from '../services/api'
 import type { AuthResponse, ShortLink } from '../types/link'
 
 export function DashboardPage() {
@@ -34,7 +34,14 @@ export function DashboardPage() {
     if (session) {
       getShortLinks()
         .then(setLinks)
-        .catch(() => setError('Sua sessão expirou. Entre novamente para acessar seus links.'))
+        .catch((requestError: unknown) => {
+          if (requestError instanceof ApiError && requestError.status === 401) {
+            localStorage.removeItem('shortlink-session')
+            setSession(null)
+            setLinks([])
+          }
+          setError('Sua sessão expirou. Entre novamente para acessar seus links.')
+        })
     }
   }, [session])
 

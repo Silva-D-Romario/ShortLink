@@ -2,6 +2,15 @@ import type { AuthResponse, Page, ShortLink, ShortLinkRequest } from '../types/l
 
 const API_URL = import.meta.env.VITE_API_URL ?? '/api'
 
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
+
 function authHeaders(): HeadersInit {
   const storedSession = localStorage.getItem('shortlink-session')
   if (!storedSession) return {}
@@ -43,7 +52,7 @@ export async function updateProfile(email: string, fullName: string): Promise<Au
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const message = await response.text()
-    throw new Error(message || `Erro ${response.status} ao acessar a API.`)
+    throw new ApiError(message || `Erro ${response.status} ao acessar a API.`, response.status)
   }
 
   return response.json() as Promise<T>
