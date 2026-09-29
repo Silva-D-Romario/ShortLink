@@ -56,7 +56,13 @@ export function DashboardPage() {
       const link = await createShortLink({ originalUrl: url })
       setLinks((current) => [link, ...current])
       return true
-    } catch {
+    } catch (requestError: unknown) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        logout()
+        setIsAuthOpen(true)
+        setError('Sua sessão expirou. Entre novamente para criar o link.')
+        return false
+      }
       setError('Não foi possível encurtar a URL. Verifique os dados e tente novamente.')
       return false
     }

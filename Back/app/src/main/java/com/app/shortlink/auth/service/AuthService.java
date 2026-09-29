@@ -1,10 +1,8 @@
 package com.app.shortlink.auth.service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,7 +22,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final Map<String, Long> sessions = new ConcurrentHashMap<>();
 
     @Transactional
     public AuthResponse register(AuthRequest request) {
@@ -57,7 +54,7 @@ public class AuthService {
     }
 
     public Optional<Long> resolveUserId(String token) {
-        return Optional.ofNullable(sessions.get(token));
+        return userRepository.findByAuthToken(token).map(User::getId);
     }
 
     public AuthResponse getProfile(Long userId) {
@@ -79,7 +76,8 @@ public class AuthService {
 
     private AuthResponse response(User user) {
         String token = UUID.randomUUID().toString();
-        sessions.put(token, user.getId());
+        user.setAuthToken(token);
+        userRepository.save(user);
         return profileResponse(user).toBuilder()
                 .token(token)
                 .build();

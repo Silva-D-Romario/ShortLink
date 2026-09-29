@@ -47,6 +47,9 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String username; // Opcional
 
+    @Column(unique = true, length = 36)
+    private String authToken;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.USER;
