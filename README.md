@@ -1,147 +1,99 @@
-# ShortLink - Sistema de Encurtamento de URLs
+# ShortLink
 
-Esse será um sistema web completo para encurtar e gerenciar URLs longas, com autenticação segura e interface intuitiva.
+Aplicação full stack para criar, organizar e acompanhar links encurtados. O projeto combina uma API REST em Java com uma interface React.
 
-## 📋 Sobre o Projeto
+## Funcionalidades
 
-ShortLink é uma aplicação que permite aos usuários:
-- Encurtar URLs longas em links curtos e memoráveis
-- Gerenciar seus links criados
-- Rastrear cliques e acessos
-- Compartilhar links de forma simplificada
-- Autenticação segura de usuários
+- Criação de URLs curtas com código Base62.
+- Redirecionamento para a URL original.
+- Listagem paginada dos links do usuário.
+- Atualização e exclusão de links.
+- Data de expiração e anotações opcionais.
+- Registro de cliques, IP e `User-Agent`.
+- Estatísticas básicas e detalhadas de acesso.
 
-## 🏗️ Arquitetura
+## Tecnologias
 
-O projeto é dividido em duas partes principais:
+### Backend
 
-### Back-end (`Back/`)
-- **Tecnologia**: Java Spring Boot
-- **Estrutura**:
-  - `auth/` - Módulo de autenticação e autorização
-  - `controller/` - Controllers REST API
-  - `service/` - Lógica de negócio
-  - `model/` - Modelos de dados
-  - `repository/` - Camada de persistência
-  - `config/` - Configurações da aplicação
-  - `security/` - Configurações de segurança
-  - `util/` - Utilitários
-  - `exception/` - Tratamento de exceções
-  - `mapper/` - DTOs e mapeadores
-  - `dto/` - Data Transfer Objects
+- Java 17 e Spring Boot 4.1
+- Spring Web MVC, Data JPA e Validation
+- H2 para desenvolvimento local
+- PostgreSQL e SQLite disponíveis como drivers
+- Maven Wrapper
 
-### Front-end (`Front/`)
-- **Tecnologia**: React
-- Interface de usuário responsiva e moderna
+### Frontend
 
-## 🚀 Como Executar
+- React 19 e TypeScript
+- Vite 8
+- Oxc para análise estática
 
-### Pré-requisitos
-- Java 11+ (ou versão especificada no projeto)
-- Maven 3.6+
-- Node.js 14+ e npm (ou yarn)
-- Git
+## Executar localmente
 
-### Back-end
+### Backend
 
 ```bash
 cd Back/app
-mvn clean install
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
-A API estará disponível em `http://localhost:8080`
+A API ficará disponível em `http://localhost:18080`. O banco H2 será criado em `Back/app/data/shortlink`.
 
-### Front-end
+### Frontend
 
 ```bash
 cd Front
 npm install
-npm start
+npm run dev
 ```
 
-A aplicação estará disponível em `http://localhost:3000`
+Abra o endereço informado pelo Vite, normalmente `http://localhost:5173`.
 
-## 📁 Estrutura do Projeto
+## Principais endpoints
 
-```
-ShortLink/
-├── Back/                    # Back-end Java Spring Boot
-│   └── app/
-│       ├── src/
-│       │   ├── main/java/   # Código-fonte
-│       │   └── test/        # Testes
-│       ├── pom.xml          # Dependências Maven
-│       └── HELP.md          # Ajuda do Maven
-├── Front/                   # Front-end React
-├── README.md                # Este arquivo
-└── .gitignore              # Configuração Git
-```
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/health` | Verificar o funcionamento da API |
+| POST | `/api/auth/register` | Criar usuário de desenvolvimento |
+| POST | `/api/auth/login` | Autenticar usuário de desenvolvimento |
+| POST | `/api/shortlinks/shorten` | Criar um link curto |
+| GET | `/api/shortlinks/{shortCode}` | Redirecionar para a URL original |
+| GET | `/api/shortlinks/my-links` | Listar links paginados |
+| PUT | `/api/shortlinks/{linkId}` | Atualizar um link |
+| DELETE | `/api/shortlinks/{linkId}` | Excluir um link |
+| GET | `/api/shortlinks/stats/{shortCode}` | Consultar estatísticas básicas |
+| GET | `/api/shortlinks/stats/{shortCode}/detailed` | Consultar estatísticas detalhadas |
 
-## 🔧 Configuração
+Exemplo de criação:
 
-### Variáveis de Ambiente
-
-Crie um arquivo `.env` ou configure as variáveis no `application.properties`:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/shortlink
-spring.datasource.username=root
-spring.datasource.password=seu_password
-spring.jpa.hibernate.ddl-auto=update
-server.port=8080
+```json
+{
+  "originalUrl": "https://example.com/conteudo",
+  "domain": "sl",
+  "expiresInDays": 30,
+  "notes": "Link de demonstração"
+}
 ```
 
-## 🧪 Testes
+## Testes e build
 
-### Back-end
 ```bash
 cd Back/app
-mvn test
+./mvnw test
+
+cd ../../Front
+npm run lint
+npm run build
 ```
 
-### Front-end
-```bash
-cd Front
-npm test
+## Estrutura
+
+```text
+Back/app/   API Spring Boot
+Front/      Aplicação React
+data/       Banco local de desenvolvimento
 ```
 
-## 📚 API Endpoints
+## Status do projeto
 
-Principais endpoints da API:
-
-- `POST /api/auth/register` - Registrar novo usuário
-- `POST /api/auth/login` - Login de usuário
-- `POST /api/links` - Criar novo link encurtado
-- `GET /api/links` - Listar links do usuário
-- `GET /api/links/{id}` - Obter detalhes de um link
-- `DELETE /api/links/{id}` - Deletar um link
-- `GET /{shortCode}` - Redirecionar para URL original
-
-## 🔐 Segurança
-
-- Autenticação JWT
-- Validação de entrada
-- CORS configurado
-- Proteção contra SQL Injection
-- Senhas criptografadas
-
-## 📦 Dependências Principais
-
-### Back-end
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- MySQL Driver
-- JWT (JSON Web Tokens)
-
-### Front-end
-- React
-- React Router
-- Axios (ou Fetch API)
-- Material-UI ou Bootstrap
-
-
----
-
-**Desenvolvido com ❤️ para simplificar o compartilhamento de URLs**
+Projeto em desenvolvimento. A autenticação atual usa usuários e tokens temporários em memória, e as rotas ainda estão liberadas pela configuração de segurança. Antes de uma implantação pública, é necessário implementar autenticação persistente, hash de senhas, autorização por usuário, migrações de banco e configuração por variáveis de ambiente.
