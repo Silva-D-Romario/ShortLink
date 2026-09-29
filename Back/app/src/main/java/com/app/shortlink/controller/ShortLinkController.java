@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -106,7 +107,10 @@ public class ShortLinkController {
 
     // Métodos auxiliares
     private Long getUserId(Authentication authentication) {
-        return authentication == null ? 1L : Long.parseLong(authentication.getName());
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+        return Long.parseLong(authentication.getName());
     }
 
     private String getClientIp(HttpServletRequest request) {

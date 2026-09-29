@@ -25,5 +25,6 @@ export interface Page<T> {
 export interface AuthResponse {
   userId: number
   email: string
+  fullName: string
   token: string
 }

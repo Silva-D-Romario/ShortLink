@@ -4,9 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class AuthResponse {
     private Long userId;
     private String email;
+    private String fullName;
     private String token;
 }
